@@ -1,0 +1,271 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Object Removal via Text Prompts</title>
+  <link href="style.css" rel="stylesheet" />
+</head>
+<body>
+
+<header>
+  <div class="container">
+    <h1>Enhancing Object Removal in Images Using Text Prompts</h1>
+    <p>Harsha Rapuru, Hareen Sai Vattikuti</p>
+  </div>
+</header>
+
+<section id="motivation">
+  <h2>Motivation</h2>
+  <p>Image editing, particularly the removal of unwanted objects such as crowds, animals, watermarks, or timestamps, is a common but highly tedious task. Traditionally, users manually create masks to isolate and remove these unwanted elements, which becomes increasingly cumbersome when dealing with complex scenes containing numerous or intricately shaped objects. Automating this process through intuitive, text-based commands—for example, simply instructing a tool to "remove people from the background"—could vastly streamline and accelerate the editing workflow, transforming a previously labor-intensive process into an effortless user interaction.</p>
+</section>
+
+<section id="Problem Statement">
+  <h2>Problem Statement</h2>
+  <p>Current image editing software predominantly relies on manual masking techniques, which become impractical when dealing with multiple or intricate objects. This manual process is not only tedious and time-consuming but also prone to human error, often leading to inaccuracies and suboptimal visual results. While some automated solutions exist, they frequently lack user-friendly natural language command interfaces. This limitation significantly restricts accessibility and usability for non-expert users who may prefer to express editing commands intuitively, rather than through complex graphical tools or detailed manual mask generation.</p>
+</section>
+
+<section id="Goal">
+  <h2>Project Goal</h2>
+  <p>Our primary goal is to develop an automated and intuitive image-editing tool that leverages natural language text prompts to facilitate object removal. By enabling users to simply describe the objects they wish to remove—such as "remove the crowd from the beach"—the tool precisely identifies and generates accurate masks around the specified items</p>
+  <p>Beyond precise identification, the solution aims to seamlessly restore the background, generating realistic content that blends naturally with the surrounding area. This ensures the edited images maintain visual coherence and authenticity without noticeable traces of object removal. Ultimately, our approach seeks to significantly enhance efficiency, accuracy, and accessibility compared to traditional manual editing methods, empowering both expert designers and casual users to perform advanced image edits with ease and confidence.</p>
+</section>
+
+<section id="Related work">
+  <h2>Related Work : InstructPix2Pix</h2>
+  <p>A prominent advancement in the field of intuitive image editing is InstructPix2Pix, a model designed to perform complex image manipulations guided by natural language instructions. InstructPix2Pix effectively bridges the gap between textual prompts and image editing, enabling users to issue simple, descriptive commands such as "remove the dog from the picture" or "change the shirt color to blue." Leveraging the power of generative models and transformer-based architectures, this approach significantly reduces the complexity involved in image editing tasks. It has demonstrated great potential in providing accessible, efficient, and user-friendly image manipulation capabilities, paving the way for further research and innovation in automated image editing through text-based interactions.
+  </p>
+  <div class="Related_work_Examples" style="display: flex; flex-direction: column; gap: 30px; margin-top: 20px;">
+
+    <div style="display: flex; flex-direction: row; gap: 20px; align-items: center;">
+      <img src="images/people-1.jpeg" class="resize-img" style="width: 300px;" alt="Original with people" />
+      <img src="images/people-1_Instructpix2pix.png" class="resize-img" style="width: 300px;" alt="Edited image" />
+      <p>Prompt: Remove people</p>
+    </div>
+
+    <div style="display: flex; flex-direction: row; gap: 20px; align-items: center;">
+      <img src="images/dog_with_bench.png" style="width: 300px;" alt="Original with dog" />
+      <img src="images/dog_with_bench_instructpix2pix.png" style="width: 300px;" alt="Dog removed" />
+      <p>Prompt: Remove Dog</p>
+    </div>
+
+    <div style="display: flex; flex-direction: row; gap: 20px; align-items: center;">
+      <img src="images/building_1.png" class="resize-img" style="width: 300px;" alt="Original building with car" />
+      <img src="images/building_Instructpix2pix.png" class="resize-img" style="width: 300px;" alt="Car removed" />
+      <p>Prompt: Remove car</p>
+    </div>
+
+  </div>
+</section>
+
+<section id="datasets" style="margin-top: 40px;">
+  <h2 style="font-family: Arial, sans-serif;">Datasets</h2>
+
+  <ul style="font-family: Georgia, serif; font-size: 16px; line-height: 1.7; list-style-type: square; padding-left: 20px;">
+
+    <li>
+      <strong>Grounding DINO:</strong>  
+      Trained on <em>LAION-400M</em> and <em>OpenImages</em> datasets, containing millions of image-caption pairs for vision-language grounding.
+    </li>
+
+    <li>
+      <strong>SAM (Segment Anything Model):</strong>  
+      Trained on the <em>SA-1B Dataset</em> with over 11 million images and 1 billion masks.
+      It covers diverse object categories, enabling general-purpose segmentation.
+    </li>
+
+    <li>
+      <strong>Stable Diffusion (Inpainting):</strong>  
+      Initially trained on the <em>LAION-5B</em> dataset, a large-scale image-text pair corpus.
+    </li>
+
+    <li>
+      <strong>Custom Dataset (This Project):</strong>  
+      Collected 1,000 training images and 100 testing images from <em>Google Street View</em>.
+      Focused on real-world urban scenes featuring people, vehicles, signage, benches, and miscellaneous background clutter.
+    </li>
+
+  </ul>
+</section>
+
+
+<section id="models" style="margin-top: 40px;">
+  <h2 style="font-family: Arial, sans-serif;">Models and Architectures</h2>
+  <p style="font-family: Georgia, serif; font-size: 16px; line-height: 1.6;">
+    To realize our goal of intuitive and precise object removal, our approach integrates several powerful AI models, each addressing specific stages of the image editing process:
+  </p>
+
+  <h3 style="color: #2c3e50; font-family: Arial, sans-serif;">Grounding DINO</h3>
+  <p style="font-family: Georgia, serif;">
+    Grounding DINO is an advanced zero-shot object detection model designed for precise vision-language grounding.
+    By interpreting natural language text prompts, Grounding DINO accurately identifies and localizes the targeted objects within an image,
+    significantly streamlining the identification phase without manual labeling.
+  </p>
+
+  <div style="text-align: center; margin-top: 20px;">
+  <img src="images/GroundingDino_Architecture.png" alt="Method architecture" class="placeholder" />
+  <p style="font-family: Georgia, serif; font-size: 14px; color: #555;">Figure: Grounding Dino Architecture.</p>
+  </div>
+
+  <h3 style="color: #2c3e50; font-family: Arial, sans-serif;">Segment Anything Model (SAM)</h3>
+  <p style="font-family: Georgia, serif;">
+    SAM is a state-of-the-art segmentation model capable of accurately segmenting virtually any object within diverse images.
+    Working in close integration with Grounding DINO, SAM generates detailed and precise segmentation masks around identified objects,
+    ensuring clean and accurate isolation for subsequent removal steps.
+  </p>
+  <div style="text-align: center; margin-top: 20px;">
+  <img src="images/SAM_Architecture.png" alt="Method architecture" class="placeholder" />
+  <p style="font-family: Georgia, serif; font-size: 14px; color: #555;">Figure: Segnment Anything Model Architecture.</p>
+  </div>
+
+
+  <h3 style="color: #2c3e50; font-family: Arial, sans-serif;">Stable Diffusion (Inpainting)</h3>
+  <p style="font-family: Georgia, serif;">
+    Stable Diffusion, a cutting-edge generative diffusion model, excels in realistic image inpainting.
+    It intelligently reconstructs removed regions by comprehensively understanding surrounding context and texture continuity,
+    resulting in seamless and visually coherent backgrounds.
+  </p>
+  <div style="text-align: center; margin-top: 20px;">
+  <img src="images/stablediffusion_overview.jpg" alt="Method architecture" class="placeholder" />
+  <p style="font-family: Georgia, serif; font-size: 14px; color: #555;">Figure: Stable Diffusion Architecture.</p>
+  </div>
+
+  <h3 style="color: #2c3e50; font-family: Arial, sans-serif;">Fine-tuning with LoRA (Low-Rank Adaptation)</h3>
+  <p style="font-family: Georgia, serif;">
+    LoRA provides a highly efficient method for fine-tuning Stable Diffusion by modifying only a minimal subset of the model parameters.
+    This targeted approach allows quick adaptation of the model to specialized or domain-specific tasks,
+    substantially improving generative accuracy and ensuring better alignment with user prompts—
+    all without needing extensive retraining of the entire model.
+  </p>
+  <div style="text-align: center; margin-top: 20px;">
+  <img src="images/LORA_Architecture.png" alt="Method architecture" class="placeholder" />
+  <p style="font-family: Georgia, serif; font-size: 14px; color: #555;">Figure: Low-Rank Adaptation Architecture</p>
+  </div>
+
+</section>
+
+
+<section id="proposed-method" style="margin-top: 40px;">
+  <h2 style="font-family: Arial, sans-serif;">Proposed Method</h2>
+
+  <h3 style="font-family: Arial, sans-serif; color: #2c3e50;">How It Works</h3>
+  <ol style="font-family: Georgia, serif; font-size: 16px; line-height: 1.8; padding-left: 20px;">
+    <li><strong>Input:</strong> An image and a natural language prompt, e.g., “car”.</li>
+    <li><strong>Detection:</strong> Grounding DINO identifies the car in the scene.</li>
+    <li><strong>Segmentation:</strong> SAM segments the car, creating a precise mask.</li>
+    <li><strong>Prompted Inpainting:</strong> With the command “remove car”, the masked region is passed to Stable Diffusion for inpainting.</li>
+    <li><strong>Output:</strong> A clean, realistic image where the car is seamlessly removed.</li>
+  </ol>
+
+  <!-- Diagram or example image -->
+  <div style="text-align: center; margin-top: 20px;">
+    <img src="images/proposed_method.png" alt="Proposed Pipeline Workflow" style="max-width: 90%; height: auto; border: 1px solid #ccc; border-radius: 8px;" />
+    <p style="font-family: Georgia, serif; font-size: 14px; color: #555;">Figure: Step-by-step workflow of the proposed object removal pipeline.</p>
+  </div>
+</section>
+
+
+<section id="results" style="margin-top: 40px;">
+  <h2 style="font-family: Arial, sans-serif;">Results</h2>
+
+  <div class="gallery" style="display: flex; flex-direction: column; gap: 30px; align-items: center;">
+    <div style="text-align: center;">
+      <img src="images/results_1.png" alt="remove car" style="max-width: 90%; height: auto; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.15);" />
+      <p style="font-family: Georgia, serif; font-size: 16px;">Prompt: Remove car</p>
+    </div>
+    <div style="text-align: center;">
+      <img src="images/results_2.png" alt="remove trashcans and cars" style="max-width: 90%; height: auto; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.15);" />
+      <p style="font-family: Georgia, serif; font-size: 16px;">Prompt: Remove cars and trashcans</p>
+    </div>
+  </div>
+
+  <h2 style="font-family: Arial, sans-serif; margin-top: 50px;">Negative Results</h2>
+
+  <div class="gallery" style="display: flex; flex-direction: column; gap: 30px; align-items: center;">
+    <div style="text-align: center;">
+      <img src="images/neg_results_1.png" alt="negative result 1" style="max-width: 90%; height: auto; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.15);" />
+      <p style="font-family: Georgia, serif; font-size: 16px;">Prompt: Remove cars and trucks</p>
+    </div>
+    <div style="text-align: center;">
+      <img src="images/Neg_results_2.png" alt="negative result 2" style="max-width: 90%; height: auto; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.15);" />
+      <p style="font-family: Georgia, serif; font-size: 16px;">Prompt: Remove car</p>
+    </div>
+  </div>
+
+  <h3>Tabular Results</h3>
+  <table>
+    <tr><th>Metric</th><th>InstructPix2Pix</th><th>Stable Diffusion</th><th>Stable Diffusion + LoRA</th></tr>
+    <tr><td>SSIM</td><td>0.4847</td><td>0.6498</td><td>0.5393</td></tr>
+    <tr><td>LPIPS</td><td>0.2449</td><td>0.1184</td><td>0.1781</td></tr>
+  </table>
+</section>
+
+<section id="conclusion">
+
+  <h2>Limitations</h2>
+  <p>Despite significant advancements, our approach faces certain limitations. Accurately reconstructing intricate textures or structurally complex backgrounds remains challenging; at times, this can lead to outputs that appear blurry or less realistic. Additionally, removing objects with reflective, transparent, or partially occluded features may leave noticeable artifacts, residual shadows, or inconsistent lighting, diminishing overall visual realism.</p>
+  <p>Another critical constraint involves processing efficiency. As image resolution or scene complexity increases, processing times become significantly longer. This limitation currently hinders our method’s suitability for real-time applications without further optimization and performance improvements. Addressing these limitations will be vital for future development and broader practical adoption</p>
+  
+  <h2>Conclusion</h2>
+  <p>In this project, we successfully developed a robust, intuitive system capable of automating object removal from images through simple natural-language text commands, significantly streamlining and simplifying the image editing process. By integrating advanced segmentation capabilities (Grounded SAM) and state-of-the-art generative inpainting (Stable Diffusion), further refined through efficient LoRA-based fine-tuning, our model consistently produced seamless, realistic, and contextually coherent results.</p>
+  <p>Through rigorous quantitative evaluations using metrics such as SSIM and LPIPS, alongside user assessments, our approach demonstrated substantial improvements in usability, accuracy, and processing efficiency compared to traditional manual masking methods. This advancement not only makes sophisticated image editing accessible to non-expert users but also lays a strong foundation for further innovations in AI-driven image manipulation workflows.</p>
+
+  <h2>Future Work</h2>
+  <p>Building upon the advancements achieved in our current approach, several exciting avenues remain for future exploration. Firstly, enhancing our model to better handle simultaneous removal of multiple objects is crucial. Developing techniques that precisely segment and realistically inpaint numerous objects in complex scenes will significantly broaden the usability and versatility of our tool.</p>
+  <p>Additionally, improving performance under challenging conditions—such as images with significant occlusion, poor lighting, or intricate backgrounds—will be essential to achieve consistently realistic and high-quality results. Further refinement of generative and segmentation methods can help overcome these real-world constraints.</p>
+  <p>Lastly, extending our system's capabilities to support video-based object removal represents a promising direction for dynamic content editing. Adapting our model for seamless and temporally consistent edits in video would greatly enhance its practical application, paving the way toward comprehensive multimedia editing solutions.</p>
+
+</section>
+
+<section id="references" style="margin-top: 40px;">
+  <h2 style="font-family: Arial, sans-serif;">📚 References</h2>
+  <ol style="line-height: 1.7; font-family: Georgia, serif; font-size: 16px;">
+    <li>
+      Brooks, T., Holynski, A., Efros, A. A. (2023). 
+      <strong>InstructPix2Pix: Learning to Follow Image Editing Instructions.</strong> 
+      Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), 18372–18382.
+    </li>
+    <li>
+      Kirillov, A., Mintun, E., Ravi, N., Mao, H., Rolland, C., Gustafson, L., Xiao, T., Whitehead, S., Berg, A. C., Lo, W. Y., & Dollár, P. (2023). 
+      <strong>Segment Anything.</strong> Meta AI Research. 
+      <em>arXiv preprint</em> <a href="https://arxiv.org/abs/2304.02643" target="_blank">arXiv:2304.02643</a>.
+    </li>
+    <li>
+      Liu, S., Zeng, Z., Ren, T., Li, F., Zhang, H., Yang, J., Li, C., Yang, J., Su, H., & Zhu, J. (2023). 
+      <strong>Grounding DINO: Marrying DINO with Grounded Pre-Training for Open-Set Object Detection.</strong> 
+      <em>arXiv preprint</em> <a href="https://arxiv.org/abs/2303.05499" target="_blank">arXiv:2303.05499</a>.
+    </li>
+    <li>
+      Rombach, R., Blattmann, A., Lorenz, D., Esser, P., & Ommer, B. (2022). 
+      <strong>High-Resolution Image Synthesis with Latent Diffusion Models.</strong> 
+      Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition (CVPR), 10684–10695.
+    </li>
+  </ol>
+</section>
+
+
+
+
+<section id="code" style="text-align: center; margin-top: 40px;">
+
+  <h2 style="font-family: Arial, sans-serif; color: #333;">Download the Full Code</h2>
+
+  <a href="https://colab.research.google.com/drive/1GA-noagh_IFgs3_bax78BFysN7QtZTIJ#scrollTo=8_JQcGybllRY" download
+     style="display: inline-block; padding: 12px 24px; background-color: #4CAF50; color: white;
+            text-decoration: none; font-size: 16px; border-radius: 8px; transition: background-color 0.3s;">
+    Click Here to Get the Code
+  </a>
+
+</section>
+
+<section id="team">
+  <h2>Project Contributors</h2>
+  <p><strong>Harsha Rapuru</strong> — Masters in Data Science, Texas A and M University</p>
+  <p><strong>Hareen Sai Vattikuti</strong> —  Masters in Data Science, Texas A and M University</p>
+</section>
+
+
+
+</body>
+</html>
